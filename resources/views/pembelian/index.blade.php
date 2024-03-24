@@ -20,6 +20,7 @@
             <div class="box-header with-border">
                 <button onclick="addForm()" class="btn btn-success btn-xs btn-flat"><i class="fa fa-plus-circle"></i> Transaksi Baru</button>
                 <button onclick="updatePeriode()" class="btn btn-info btn-xs btn-flat"><i class="fa fa-plus-circle"></i> Ubah Periode</button>
+                <button id="printPDF" class="btn btn-success btn-xs btn-flat"><i class="fa fa-file-pdf"></i> Print PDF</button>
                 @empty(! session('id_pembelian'))
                 <a href="{{ route('pembelian_detail.index') }}" class="btn btn-info btn-xs btn-flat"><i class="fa fa-pencil"></i> Transaksi Aktif</a>
                 @endempty
@@ -190,6 +191,64 @@
         let formatted = ribuan.join('.').split('').reverse().join('');
         return formatted;
     }
+
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#printPDF').click(function() {
+            // Mendapatkan HTML dari kolom yang diinginkan
+            var tbodyHtml = '';
+            $('.table-pembelian tbody tr').each(function(index) {
+                tbodyHtml += `
+                    <tr>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(0)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(1)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(2)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(3)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(4)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(5)').text()}</td>
+                        <td style="font-size: 9px;">${$(this).find('td:eq(6)').text()}</td>
+                    </tr>`;
+            });
+
+            // Mendapatkan HTML dari total pembelian
+            var tfootHtml = $('.table-pembelian tfoot').html();
+
+            // Membuat konten untuk tabel dengan menambahkan thead dan tbody
+            var tableHtml = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">No</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Tanggal</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Supplier</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Total Item</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Total Harga</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Diskon</th>
+                            <th style="font-size: 9px;">Total Bayar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tbodyHtml}
+                    </tbody>
+                    <tfoot style="font-size: 9px;">
+                        ${tfootHtml}
+                    </tfoot>
+                </table>`;
+
+            // Membuka jendela baru untuk mencetak laporan
+            var newWindow = window.open('', '_blank');
+            newWindow.document.write('<html><head><title>Laporan Pembelian</title><style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; } th, td { padding: 4px; text-align: left; border-bottom: 1px solid #ddd; } th { background-color: #f2f2f2; }</style></head><body>');
+            newWindow.document.write('<h1 style="text-align: center; font-size: 12px;">Laporan Pembelian</h1>');
+            newWindow.document.write(tableHtml);
+            newWindow.document.write('</body></html>');
+            newWindow.document.close();
+
+            // Mencetak laporan
+            newWindow.print();
+        });
+    });
 
 </script>
 @endpush
