@@ -10,7 +10,7 @@
 
 @section('breadcrumb')
     @parent
-    <li class="active">Daftar Penjualan</li>
+    <li class="active"> Penjualan</li>
 @endsection
 
 @section('content')
