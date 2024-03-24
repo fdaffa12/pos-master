@@ -42,9 +42,8 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5"></td>
-                            <td><strong>Total Pembelian:</strong></td>
-                            <td id="total-pembelian" colspan="2"></td>
+                        <td colspan="6" style="text-align: center;"><b>Total Pembelian</b></td>
+                            <td id="total-pembelian" style="text-align: left;"></td>
                         </tr>
                     </tfoot>
                 </table>

@@ -7,14 +7,31 @@ use App\Models\Pengeluaran;
 
 class PengeluaranController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('pengeluaran.index');
+        $tanggalAwal = date('Y-m-d', mktime(0, 0, 0, date('m'), 1, date('Y')));
+        $tanggalAkhir = date('Y-m-d');
+
+        if ($request->has('tanggal_awal') && $request->tanggal_awal != "" && $request->has('tanggal_akhir') && $request->tanggal_akhir) {
+            $tanggalAwal = $request->tanggal_awal;
+            $tanggalAkhir = $request->tanggal_akhir;
+        }
+
+        return view('pengeluaran.index', compact('tanggalAwal', 'tanggalAkhir'));
     }
 
-    public function data()
+    public function data($awal, $akhir)
     {
-        $pengeluaran = Pengeluaran::orderBy('id_pengeluaran', 'desc')->get();
+         // Ubah format tanggal awal dan akhir ke dalam format yang sesuai jika diperlukan
+         $tanggalAwal = date('Y-m-d', strtotime($awal));
+         $tanggalAkhir = date('Y-m-d', strtotime($akhir));
+ 
+         // Ambil data pembelian dari rentang tanggal yang diberikan
+         $pengeluaran = Pengeluaran::whereDate('created_at', '>=', $tanggalAwal)->whereDate('created_at', '<=', $tanggalAkhir)
+             ->orderBy('id_pengeluaran', 'desc')
+             ->get();
+ 
+        // $pengeluaran = Pengeluaran::orderBy('id_pengeluaran', 'desc')->get();
 
         return datatables()
             ->of($pengeluaran)

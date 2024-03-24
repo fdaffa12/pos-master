@@ -72,7 +72,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="6"><strong>Total:</strong></td>
+                            <td colspan="8" style="text-align: center;"><b>Total Penjualan</b></td>
                             <td>Rp. {{ format_uang($totalPendapatan) }}</td>
                             <td></td>
                         </tr>
@@ -285,6 +285,9 @@
                     <tbody>
                         ${tbodyHtml}
                     </tbody>
+                    <tfoot style="font-size: 9px;">
+                        ${tfootHtml}
+                    </tfoot>
                 </table>`;
 
             // Membuka jendela baru untuk mencetak laporan
@@ -293,11 +296,7 @@
             newWindow.document.write('<h1 style="text-align: center; font-size: 12px;">Laporan Penjualan</h1>');
             newWindow.document.write(tableHtml);
 
-            // Menambahkan tfoot hanya di halaman terakhir
-            if ($('.table-penjualan').DataTable().page.info().end === $('.table-penjualan tbody tr').length) {
-                newWindow.document.write('<table style="width: 100%; border-collapse: collapse; font-size: 9px;"><tfoot>' + tfootHtml + '</tfoot></table>');
-            }
-            
+                       
             newWindow.document.write('</body></html>');
             newWindow.document.close();
 
