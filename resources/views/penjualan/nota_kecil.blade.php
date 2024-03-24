@@ -72,9 +72,36 @@
     <br>
     <table width="100%" style="border: 0;">
         @foreach ($detail as $item)
+        <tr>
             <tr>
-                <td colspan="3">{{ $item->produk->nama_produk }}</td>
+                <td colspan="3">
+                    <?php
+                    $nama_produk = $item->produk->nama_produk;
+                    $tanggal_dibuat = $item->created_at; // Sesuaikan dengan atribut yang sesuai
+                    $paket_1_jam_anak = "Paket 1 Jam Anak";
+            
+                    if ($nama_produk == $paket_1_jam_anak) {
+                        // Tampilkan nama produk
+                        echo $nama_produk . "<br>";
+            
+                        // Tampilkan jam dibuatnya
+                        echo "Chekin: " . date('H:i', strtotime($tanggal_dibuat)) . "<br>";
+            
+                        // Lakukan penjumlahan 60 menit dari jam dibuatnya
+                        $tanggal_dibuat_plus_60_menit = strtotime('+60 minutes', strtotime($tanggal_dibuat));
+                        $jam_ditambah_60 = date('H:i', $tanggal_dibuat_plus_60_menit);
+            
+                        echo "Check Out: " . $jam_ditambah_60;
+                    } else {
+                        // Jika nama produk bukan "Paket 1 Jam Anak", tampilkan hanya nama produk
+                        echo $nama_produk;
+                    }
+                    ?>
+                </td>
             </tr>
+            
+        </tr>
+        
             <tr>
                 <td>{{ $item->jumlah }} x {{ format_uang($item->harga_jual) }}</td>
                 <td></td>

@@ -10,17 +10,34 @@ use App\Models\Supplier;
 
 class PembelianController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $tanggalAwal = date('Y-m-d', mktime(0, 0, 0, date('m'), 1, date('Y')));
+        $tanggalAkhir = date('Y-m-d');
+
+        if ($request->has('tanggal_awal') && $request->tanggal_awal != "" && $request->has('tanggal_akhir') && $request->tanggal_akhir) {
+            $tanggalAwal = $request->tanggal_awal;
+            $tanggalAkhir = $request->tanggal_akhir;
+        }
+
         $supplier = Supplier::orderBy('nama')->get();
 
-        return view('pembelian.index', compact('supplier'));
+        return view('pembelian.index', compact('supplier', 'tanggalAwal', 'tanggalAkhir'));
     }
 
-    public function data()
+    public function data($awal, $akhir)
     {
-        $pembelian = Pembelian::orderBy('id_pembelian', 'desc')->get();
+        // Ubah format tanggal awal dan akhir ke dalam format yang sesuai jika diperlukan
+        $tanggalAwal = date('Y-m-d', strtotime($awal));
+        $tanggalAkhir = date('Y-m-d', strtotime($akhir));
 
+        // Ambil data pembelian dari rentang tanggal yang diberikan
+        $pembelian = Pembelian::whereDate('created_at', '>=', $tanggalAwal)->whereDate('created_at', '<=', $tanggalAkhir)
+            ->where('total_item', '!=', 0)
+            ->orderBy('id_pembelian', 'desc')
+            ->get();
+
+        // Mengembalikan data dalam format DataTables
         return datatables()
             ->of($pembelian)
             ->addIndexColumn()
@@ -28,10 +45,10 @@ class PembelianController extends Controller
                 return format_uang($pembelian->total_item);
             })
             ->addColumn('total_harga', function ($pembelian) {
-                return 'Rp. '. format_uang($pembelian->total_harga);
+                return 'Rp. ' . format_uang($pembelian->total_harga);
             })
             ->addColumn('bayar', function ($pembelian) {
-                return 'Rp. '. format_uang($pembelian->bayar);
+                return 'Rp. ' . format_uang($pembelian->bayar);
             })
             ->addColumn('tanggal', function ($pembelian) {
                 return tanggal_indonesia($pembelian->created_at, false);
@@ -44,15 +61,17 @@ class PembelianController extends Controller
             })
             ->addColumn('aksi', function ($pembelian) {
                 return '
-                <div class="btn-group">
-                    <button onclick="showDetail(`'. route('pembelian.show', $pembelian->id_pembelian) .'`)" class="btn btn-xs btn-info btn-flat"><i class="fa fa-eye"></i></button>
-                    <button onclick="deleteData(`'. route('pembelian.destroy', $pembelian->id_pembelian) .'`)" class="btn btn-xs btn-danger btn-flat"><i class="fa fa-trash"></i></button>
-                </div>
+                    <div class="btn-group">
+                        <button onclick="showDetail(`' . route('pembelian.show', $pembelian->id_pembelian) . '`)" class="btn btn-xs btn-info btn-flat"><i class="fa fa-eye"></i></button>
+                        <button onclick="deleteData(`' . route('pembelian.destroy', $pembelian->id_pembelian) . '`)" class="btn btn-xs btn-danger btn-flat"><i class="fa fa-trash"></i></button>
+                    </div>
                 ';
             })
             ->rawColumns(['aksi'])
             ->make(true);
     }
+
+
 
     public function create($id)
     {

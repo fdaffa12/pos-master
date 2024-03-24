@@ -28,41 +28,51 @@ class LaporanController extends Controller
         $no = 1;
         $data = array();
         $pendapatan = 0;
+        $total_penjualan = 0;
+        $total_pembelian = 0;
+        $total_pengeluaran = 0;
         $total_pendapatan = 0;
 
         while (strtotime($awal) <= strtotime($akhir)) {
             $tanggal = $awal;
             $awal = date('Y-m-d', strtotime("+1 day", strtotime($awal)));
 
-            $total_penjualan = Penjualan::where('created_at', 'LIKE', "%$tanggal%")->sum('bayar');
-            $total_pembelian = Pembelian::where('created_at', 'LIKE', "%$tanggal%")->sum('bayar');
-            $total_pengeluaran = Pengeluaran::where('created_at', 'LIKE', "%$tanggal%")->sum('nominal');
+            $total_penjualan_hari_ini = Penjualan::where('created_at', 'LIKE', "%$tanggal%")->sum('bayar');
+            $total_pembelian_hari_ini = Pembelian::where('created_at', 'LIKE', "%$tanggal%")->sum('bayar');
+            $total_pengeluaran_hari_ini = Pengeluaran::where('created_at', 'LIKE', "%$tanggal%")->sum('nominal');
 
-            $pendapatan = $total_penjualan - $total_pembelian - $total_pengeluaran;
-            $total_pendapatan += $pendapatan;
+            $total_penjualan += $total_penjualan_hari_ini;
+            $total_pembelian += $total_pembelian_hari_ini;
+            $total_pengeluaran += $total_pengeluaran_hari_ini;
+
+            $pendapatan_hari_ini = $total_penjualan_hari_ini - $total_pembelian_hari_ini - $total_pengeluaran_hari_ini;
+            $pendapatan += $pendapatan_hari_ini;
+            $total_pendapatan += $pendapatan_hari_ini;
 
             $row = array();
             $row['DT_RowIndex'] = $no++;
             $row['tanggal'] = tanggal_indonesia($tanggal, false);
-            $row['penjualan'] = format_uang($total_penjualan);
-            $row['pembelian'] = format_uang($total_pembelian);
-            $row['pengeluaran'] = format_uang($total_pengeluaran);
-            $row['pendapatan'] = format_uang($pendapatan);
+            $row['penjualan'] = format_uang($total_penjualan_hari_ini);
+            $row['pembelian'] = format_uang($total_pembelian_hari_ini);
+            $row['pengeluaran'] = format_uang($total_pengeluaran_hari_ini);
+            $row['pendapatan'] = format_uang($pendapatan_hari_ini);
 
             $data[] = $row;
         }
 
         $data[] = [
-            'DT_RowIndex' => '',
+            'DT_RowIndex' => 'Total',
             'tanggal' => '',
-            'penjualan' => '',
-            'pembelian' => '',
-            'pengeluaran' => 'Total Pendapatan',
-            'pendapatan' => format_uang($total_pendapatan),
+            'penjualan' => 'Penjualan: ' . format_uang($total_penjualan),
+            'pembelian' => 'Pembelian: ' . format_uang($total_pembelian),
+            'pengeluaran' => 'Pengeluaran: ' . format_uang($total_pengeluaran),
+            'pendapatan' => 'Pendapatan: ' . format_uang($total_pendapatan),
         ];
+        
 
         return $data;
     }
+
 
     public function data($awal, $akhir)
     {

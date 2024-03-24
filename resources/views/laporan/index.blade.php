@@ -55,13 +55,61 @@
                 url: '{{ route('laporan.data', [$tanggalAwal, $tanggalAkhir]) }}',
             },
             columns: [
-                {data: 'DT_RowIndex', searchable: false, sortable: false},
-                {data: 'tanggal'},
-                {data: 'penjualan'},
-                {data: 'pembelian'},
-                {data: 'pengeluaran'},
-                {data: 'pendapatan'}
-            ],
+            {data: 'DT_RowIndex', searchable: false, sortable: false},
+            {data: 'tanggal'},
+            {
+                data: 'penjualan',
+            render: function(data, type, row) {
+                var tanggalAwal = $('#tanggal_awal').val();
+                var tanggalAkhir = $('#tanggal_akhir').val();
+                var paymentMethod = $('#payment_method').val();
+
+                var tanggalParts = row.tanggal.split(' ');
+                var hari = tanggalParts[0]; // Mengambil bagian hari
+                var bulan = tanggalParts[1]; // Mengambil bagian bulan
+                var tahun = tanggalParts[2]; // Mengambil bagian tahun
+
+                // Membuat objek bulan yang berisi penamaan bulan dalam bahasa Indonesia
+                var bulanIndonesia = {
+                    'Januari': '01',
+                    'Februari': '02',
+                    'Maret': '03',
+                    'April': '04',
+                    'Mei': '05',
+                    'Juni': '06',
+                    'Juli': '07',
+                    'Agustus': '08',
+                    'September': '09',
+                    'Oktober': '10',
+                    'November': '11',
+                    'Desember': '12'
+                };
+
+                var bulanAngka = bulanIndonesia[bulan]; // Mengambil angka bulan berdasarkan penamaan bulan
+
+                // Format tanggal dalam format YYYY-MM-DD
+                var tanggal = tahun + '-' + bulanAngka + '-' + hari;
+
+
+
+                // Buat URL berdasarkan tanggal, tanggal_awal, dan tanggal_akhir
+                var url = '{{ route('penjualan.index') }}?tanggal_awal=' + tanggal + '&tanggal_akhir=' + tanggal + '&payment_method=';
+
+
+
+                // Tambahkan parameter metode pembayaran jika dipilih
+                if (paymentMethod) {
+                    url += '&payment_method=' + paymentMethod;
+                }
+
+                // Buat tautan dengan URL dinamis
+                return '<a href="' + url + '">' + data + '</a>';
+            }
+            },
+            {data: 'pembelian'},
+            {data: 'pengeluaran'},
+            {data: 'pendapatan'}
+        ],
             dom: 'Brt',
             bSort: false,
             bPaginate: false,
