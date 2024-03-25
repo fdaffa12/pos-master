@@ -1,7 +1,7 @@
 @extends('layouts.master')
 
 @section('title')
-    Daftar Penjualan
+    Daftar Penjualan {{ tanggal_indonesia($tanggalAwal, false) }} s/d {{ tanggal_indonesia($tanggalAkhir, false) }}
 @endsection
 
 @push('css')
