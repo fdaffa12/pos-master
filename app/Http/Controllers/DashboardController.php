@@ -10,6 +10,7 @@ use App\Models\Penjualan;
 use App\Models\Produk;
 use App\Models\Supplier;
 use App\Models\PenjualanDetail;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -59,15 +60,44 @@ class DashboardController extends Controller
         $produkData = [];
 
         foreach ($penjualanTerbanyakPerBulan as $penjualan) {
-        if ($penjualan->produk) {
-            $produkLabels[] = $penjualan->produk->nama_produk; // Ambil nama produk
-            $produkData[] = $penjualan->total_penjualan; // Ambil total penjualan
+            if ($penjualan->produk) {
+                $produkLabels[] = $penjualan->produk->nama_produk; // Ambil nama produk
+                $produkData[] = $penjualan->total_penjualan; // Ambil total penjualan
+            }
         }
+
+        // Ambil data kasir dengan penjualan terbanyak
+        $kasirTerbanyak = Penjualan::select('id_user')
+        ->selectRaw('COUNT(*) as total_penjualan')
+        ->groupBy('id_user')
+        ->orderByDesc('total_penjualan')
+        ->limit(5) // Ubah angka 5 menjadi jumlah kasir teratas yang ingin Anda tampilkan
+        ->get();
+
+        // Mendapatkan daftar ID kasir dengan penjualan terbanyak
+        $kasirIds = $kasirTerbanyak->pluck('id_user');
+
+        // Ambil informasi kasir berdasarkan ID kasir dengan penjualan terbanyak
+        // Ambil informasi kasir dengan penjualan terbanyak
+        $kasirInfo = DB::table('users')
+        ->select('users.*', DB::raw('(SELECT COUNT(*) FROM penjualan WHERE penjualan.id_user = users.id) as total_penjualan'))
+        ->whereIn('id', $kasirIds)
+        ->orderByDesc('total_penjualan')
+        ->get();
+
+        // Kemudian, Anda dapat membuat array dari nama-nama kasir untuk digunakan sebagai labels di chart
+        $kasirLabels = [];
+        $kasirData = [];
+
+        foreach ($kasirInfo as $kasir) {
+            $kasirLabels[] = $kasir->name; // Ambil nama kasir
+            $kasirData[] = $kasir->total_penjualan; // Ambil total penjualan
         }
+
 
 
         if (auth()->user()->level == 1) {
-            return view('admin.dashboard', compact('kategori', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
+            return view('admin.dashboard', compact('kategori', 'kasirLabels', 'kasirData', 'kasirInfo', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
         } else {
             return view('kasir.dashboard');
         }
