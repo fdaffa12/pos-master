@@ -74,7 +74,8 @@ class PengeluaranController extends Controller
     {
         $pengeluaran = Pengeluaran::create($request->all());
 
-        return response()->json('Data berhasil disimpan', 200);
+        return redirect()->back()->with('success', 'Data berhasil disimpan');
+
     }
 
     /**

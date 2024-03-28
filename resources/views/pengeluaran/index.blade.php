@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="modal-form" tabindex="-1" role="dialog" aria-labelledby="modal-form">
+<div class="modal fade" id="modal-form2" tabindex="-1" role="dialog" aria-labelledby="modal-form2">
     <div class="modal-dialog modal-lg" role="document">
         <form action="{{ route('pengeluaran.index') }}" method="get" data-toggle="validator" class="form-horizontal">
             <div class="modal-content">
@@ -161,7 +161,7 @@
     }
 
     function updatePeriode() {
-            $('#modal-form').modal('show');
+            $('#modal-form2').modal('show');
         }
 
     function editForm(url) {
