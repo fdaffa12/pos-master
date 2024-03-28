@@ -43,7 +43,7 @@
         <p style="float: right">{{ strtoupper(auth()->user()->name) }}</p>
     </div>
     <div style="clear: both;"></div>
-    <p>No: {{ tambah_nol_didepan($penjualan->id_penjualan, 10) }}</p>
+    <p>No: {{($penjualan->kode_bill)-1 }}</p>
     <p class="text-center">===================================</p>
     
     <br>

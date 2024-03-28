@@ -31,6 +31,7 @@
                 <table class="table table-stiped table-bordered table-penjualan">
                     <thead>
                         <th width="5%">No</th>
+                        <th>Kode Bill</th>
                         <th>Tanggal</th>
                         <th>Nama</th>
                         <th>Metode Pembayaran</th>
@@ -46,6 +47,7 @@
                     @foreach ($penjualan as $index => $data)
                         <tr>
                             <td>{{ $index + 1 }}</td>
+                            <td>{{($data->kode_bill)-1 }}</td>
                             <td>{{ tanggal_indonesia($data->created_at, false) }}</td>
                             <td>{{ ucfirst($data->nama) }}</td>
                             <td>{{ ucfirst($data->payment_method) }}</td>
@@ -72,7 +74,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="8" style="text-align: center;"><b>Total Penjualan</b></td>
+                            <td colspan="9" style="text-align: center;"><b>Total Penjualan</b></td>
                             <td>Rp. {{ format_uang($totalPendapatan) }}</td>
                             <td></td>
                         </tr>
@@ -259,7 +261,8 @@
                         <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(5)').text()}</td>
                         <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(6)').text()}</td>
                         <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(7)').text()}</td>
-                        <td style="font-size: 9px;">${$(this).find('td:eq(8)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(8)').text()}</td>
+                        <td style="font-size: 9px;">${$(this).find('td:eq(9)').text()}</td>
                     </tr>`;
             });
 
@@ -272,6 +275,7 @@
                     <thead>
                         <tr>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">No</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Kode Bill</th>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">Tanggal</th>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">Nama</th>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">Metode Pembayaran</th>
