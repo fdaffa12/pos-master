@@ -130,24 +130,28 @@ class PenjualanController extends Controller
         // Mendapatkan tanggal hari ini
         $tanggal = now()->format('Ymd');
 
-        // Mendapatkan jumlah penjualan pada tanggal yang sama
-        $count = Penjualan::whereDate('created_at', now())->count() + 1;
-
-        // Mengecek apakah tanggal sebelumnya sama dengan tanggal hari ini
+        // Mendapatkan tanggal sebelumnya dari data penjualan terbaru
         $previousDate = Penjualan::latest()->value('created_at');
         $previousTanggal = $previousDate ? $previousDate->format('Ymd') : null;
 
-        if ($previousTanggal != $tanggal) {
-            // Jika tanggal berganti, reset nomor urut ke 1
-            $count = 1;
+        // Jika tanggal sebelumnya sama dengan tanggal hari ini, tambahkan nomor urut
+        if ($previousTanggal == $tanggal) {
+            // Mendapatkan nomor urut dari penjualan hari ini
+            $count = Penjualan::whereDate('created_at', now())->count();
+        } else {
+            // Jika tanggal berbeda, nomor urut direset ke 1
+            $count = 0;
         }
 
-        // Menghasilkan kode bill dengan nomor urut yang sesuai
+        // Nomor urut ditambah 1 untuk mendapatkan nomor urut baru
+        $count += 1;
+
+        // Menghasilkan kode bill dengan format tanggal + nomor urut yang sesuai
         $kode_bill = $tanggal . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-        
 
 
+    
         $penjualan = Penjualan::findOrFail($request->id_penjualan);
 
         $penjualan->id_member = $request->id_member;

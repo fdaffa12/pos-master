@@ -66,24 +66,29 @@ class DashboardController extends Controller
             }
         }
 
-        // Ambil data kasir dengan penjualan terbanyak
+        // Ambil bulan dan tahun saat ini
+        $bulanIni = date('m');
+        $tahunIni = date('Y');
+
+        // Ambil data kasir dengan penjualan terbanyak per bulan
         $kasirTerbanyak = Penjualan::select('id_user')
-        ->selectRaw('COUNT(*) as total_penjualan')
-        ->groupBy('id_user')
-        ->orderByDesc('total_penjualan')
-        ->limit(5) // Ubah angka 5 menjadi jumlah kasir teratas yang ingin Anda tampilkan
-        ->get();
+            ->selectRaw('COUNT(*) as total_penjualan')
+            ->whereMonth('created_at', $bulanIni)
+            ->whereYear('created_at', $tahunIni)
+            ->groupBy('id_user')
+            ->orderByDesc('total_penjualan')
+            ->limit(5)
+            ->get();
 
         // Mendapatkan daftar ID kasir dengan penjualan terbanyak
         $kasirIds = $kasirTerbanyak->pluck('id_user');
 
         // Ambil informasi kasir berdasarkan ID kasir dengan penjualan terbanyak
-        // Ambil informasi kasir dengan penjualan terbanyak
         $kasirInfo = DB::table('users')
-        ->select('users.*', DB::raw('(SELECT COUNT(*) FROM penjualan WHERE penjualan.id_user = users.id) as total_penjualan'))
-        ->whereIn('id', $kasirIds)
-        ->orderByDesc('total_penjualan')
-        ->get();
+            ->select('users.*', DB::raw('(SELECT COUNT(*) FROM penjualan WHERE penjualan.id_user = users.id AND MONTH(penjualan.created_at) = ' . $bulanIni . ' AND YEAR(penjualan.created_at) = ' . $tahunIni . ') as total_penjualan'))
+            ->whereIn('id', $kasirIds)
+            ->orderByDesc('total_penjualan')
+            ->get();
 
         // Kemudian, Anda dapat membuat array dari nama-nama kasir untuk digunakan sebagai labels di chart
         $kasirLabels = [];
@@ -93,6 +98,7 @@ class DashboardController extends Controller
             $kasirLabels[] = $kasir->name; // Ambil nama kasir
             $kasirData[] = $kasir->total_penjualan; // Ambil total penjualan
         }
+
 
 
 
