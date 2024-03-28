@@ -9,7 +9,10 @@ use App\Models\Pengeluaran;
 use App\Models\Penjualan;
 use App\Models\Produk;
 use App\Models\Supplier;
+use App\Models\PenjualanDetail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
 
 class DashboardController extends Controller
 {
@@ -41,8 +44,30 @@ class DashboardController extends Controller
 
         $tanggal_awal = date('Y-m-01');
 
+        // Ambil data penjualan terbanyak per bulan untuk setiap produk
+        $penjualanTerbanyakPerBulan = PenjualanDetail::select(DB::raw('YEAR(created_at) as tahun, MONTH(created_at) as bulan'), 'id_produk')
+        ->selectRaw('COUNT(*) as total_penjualan')
+        ->with('produk') // Eager load relasi produk
+        ->groupBy('tahun', 'bulan', 'id_produk')
+        ->orderByDesc('tahun')
+        ->orderByDesc('bulan')
+        ->limit(5)
+        ->get();
+
+        // Mendapatkan daftar nama produk dan total penjualannya
+        $produkLabels = [];
+        $produkData = [];
+
+        foreach ($penjualanTerbanyakPerBulan as $penjualan) {
+        if ($penjualan->produk) {
+            $produkLabels[] = $penjualan->produk->nama_produk; // Ambil nama produk
+            $produkData[] = $penjualan->total_penjualan; // Ambil total penjualan
+        }
+        }
+
+
         if (auth()->user()->level == 1) {
-            return view('admin.dashboard', compact('kategori', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
+            return view('admin.dashboard', compact('kategori', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
         } else {
             return view('kasir.dashboard');
         }
