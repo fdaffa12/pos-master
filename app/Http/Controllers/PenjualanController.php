@@ -108,20 +108,31 @@ class PenjualanController extends Controller
 
     public function create()
     {
+        // Mengecek apakah terdapat penjualan sebelumnya dengan total_item = 0
+        $previousSale = Penjualan::where('total_item', 0)->latest()->first();
+
+        // Jika penjualan sebelumnya ditemukan, hapus entri tersebut
+        if ($previousSale) {
+            $previousSale->delete();
+        }
+
+        // Membuat entri baru Penjualan
         $penjualan = new Penjualan();
         $penjualan->id_member = null;
         $penjualan->total_item = 0;
         $penjualan->total_harga = 0;
         $penjualan->diskon = 0;
         $penjualan->bayar = 0;
-        $penjualan->kode_bill = 0;
+        $penjualan->kode_bill = null;
         $penjualan->nama = null;
         $penjualan->payment_method = 'cash';
         $penjualan->id_user = auth()->id();
         $penjualan->save();
 
+        // Menyimpan id_penjualan ke dalam session
         session(['id_penjualan' => $penjualan->id_penjualan]);
         return redirect()->route('transaksi.index');
+
     }
 
     public function store(Request $request)
