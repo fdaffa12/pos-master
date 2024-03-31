@@ -45,6 +45,25 @@ class DashboardController extends Controller
 
         $tanggal_awal = date('Y-m-01');
 
+        $penjualanTerbanyakPerHari = Penjualan::selectRaw('DAYNAME(created_at) as hari_penjualan, COUNT(*) as total_penjualan')
+        ->whereYear('created_at', '=', 2024)
+        ->groupBy('hari_penjualan')
+        ->orderByRaw("FIELD(hari_penjualan, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")
+        ->get();
+
+        // Sort the collection by total_penjualan in descending order
+        $penjualanTerbanyakPerHari = $penjualanTerbanyakPerHari->sortByDesc('total_penjualan');
+
+        $tanggalPenjualanLabels = []; 
+        $totalPenjualanPerHari = [];
+
+        foreach ($penjualanTerbanyakPerHari as $penjualan) {
+            $tanggalPenjualanLabels[] = $penjualan->hari_penjualan; // Ambil hari penjualan
+            $totalPenjualanPerHari[] = $penjualan->total_penjualan; // Ambil total penjualan
+        }
+
+
+
         // Tentukan bulan yang ingin Anda ambil data penjualannya
         $bulan_tujuan = date('m'); // Misalnya, kita ingin ambil data untuk bulan ini
 
@@ -108,7 +127,7 @@ class DashboardController extends Controller
 
 
         if (auth()->user()->level == 1) {
-            return view('admin.dashboard', compact('kategori', 'kasirLabels', 'kasirData', 'kasirInfo', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
+            return view('admin.dashboard', compact('tanggalPenjualanLabels', 'penjualanTerbanyakPerHari', 'totalPenjualanPerHari','kategori', 'kasirLabels', 'kasirData', 'kasirInfo', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
         } else {
             return view('kasir.dashboard');
         }
