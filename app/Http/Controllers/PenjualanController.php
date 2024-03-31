@@ -108,20 +108,31 @@ class PenjualanController extends Controller
 
     public function create()
     {
+        // Mengecek apakah terdapat penjualan sebelumnya dengan total_item = 0
+        $previousSale = Penjualan::where('total_item', 0)->latest()->first();
+
+        // Jika penjualan sebelumnya ditemukan, hapus entri tersebut
+        if ($previousSale) {
+            $previousSale->delete();
+        }
+
+        // Membuat entri baru Penjualan
         $penjualan = new Penjualan();
         $penjualan->id_member = null;
         $penjualan->total_item = 0;
         $penjualan->total_harga = 0;
         $penjualan->diskon = 0;
         $penjualan->bayar = 0;
-        $penjualan->kode_bill = 0;
+        $penjualan->kode_bill = null;
         $penjualan->nama = null;
         $penjualan->payment_method = 'cash';
         $penjualan->id_user = auth()->id();
         $penjualan->save();
 
+        // Menyimpan id_penjualan ke dalam session
         session(['id_penjualan' => $penjualan->id_penjualan]);
         return redirect()->route('transaksi.index');
+
     }
 
     public function store(Request $request)
@@ -223,6 +234,28 @@ class PenjualanController extends Controller
 
         return response(null, 204);
     }
+
+    public function update(Request $request, $id)
+{
+    // Temukan data penjualan berdasarkan ID
+    $penjualan = Penjualan::findOrFail($id);
+
+    // Validasi input jika diperlukan
+    $validatedData = $request->validate([
+        'payment_method' => 'required', // Sesuaikan dengan validasi yang Anda butuhkan
+        // Tambahkan validasi lainnya sesuai kebutuhan
+    ]);
+
+    // Update data penjualan
+    $penjualan->payment_method = $request->input('payment_method');
+    // Tambahkan kode untuk update data lainnya sesuai kebutuhan
+
+    // Simpan perubahan
+    $penjualan->save();
+
+    // Redirect kembali ke halaman index penjualan dengan pesan sukses
+    return redirect()->route('penjualan.index')->with('success', 'Data penjualan berhasil diperbarui.');
+}
 
     public function selesai()
     {

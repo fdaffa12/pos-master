@@ -45,15 +45,38 @@ class DashboardController extends Controller
 
         $tanggal_awal = date('Y-m-01');
 
-        // Ambil data penjualan terbanyak per bulan untuk setiap produk
-        $penjualanTerbanyakPerBulan = PenjualanDetail::select(DB::raw('YEAR(created_at) as tahun, MONTH(created_at) as bulan'), 'id_produk')
-        ->selectRaw('COUNT(*) as total_penjualan')
-        ->with('produk') // Eager load relasi produk
-        ->groupBy('tahun', 'bulan', 'id_produk')
-        ->orderByDesc('tahun')
-        ->orderByDesc('bulan')
-        ->limit(5)
+        $penjualanTerbanyakPerHari = Penjualan::selectRaw('DAYNAME(created_at) as hari_penjualan, COUNT(*) as total_penjualan')
+        ->whereYear('created_at', '=', 2024)
+        ->groupBy('hari_penjualan')
+        ->orderByRaw("FIELD(hari_penjualan, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')")
         ->get();
+
+        // Sort the collection by total_penjualan in descending order
+        $penjualanTerbanyakPerHari = $penjualanTerbanyakPerHari->sortByDesc('total_penjualan');
+
+        $tanggalPenjualanLabels = []; 
+        $totalPenjualanPerHari = [];
+
+        foreach ($penjualanTerbanyakPerHari as $penjualan) {
+            $tanggalPenjualanLabels[] = $penjualan->hari_penjualan; // Ambil hari penjualan
+            $totalPenjualanPerHari[] = $penjualan->total_penjualan; // Ambil total penjualan
+        }
+
+
+
+        // Tentukan bulan yang ingin Anda ambil data penjualannya
+        $bulan_tujuan = date('m'); // Misalnya, kita ingin ambil data untuk bulan ini
+
+        // Ambil data penjualan terbanyak per bulan untuk setiap produk untuk bulan yang ditentukan
+        $penjualanTerbanyakPerBulan = PenjualanDetail::select(DB::raw('YEAR(created_at) as tahun, MONTH(created_at) as bulan'), 'id_produk')
+            ->selectRaw('COUNT(*) as total_penjualan')
+            ->with('produk') // Eager load relasi produk
+            ->whereMonth('created_at', $bulan_tujuan) // Filter hanya data untuk bulan yang ditentukan
+            ->groupBy('tahun', 'bulan', 'id_produk')
+            ->orderByDesc('tahun')
+            ->orderByDesc('bulan')
+            ->limit(5)
+            ->get();
 
         // Mendapatkan daftar nama produk dan total penjualannya
         $produkLabels = [];
@@ -65,6 +88,7 @@ class DashboardController extends Controller
                 $produkData[] = $penjualan->total_penjualan; // Ambil total penjualan
             }
         }
+
 
         // Ambil bulan dan tahun saat ini
         $bulanIni = date('m');
@@ -103,7 +127,7 @@ class DashboardController extends Controller
 
 
         if (auth()->user()->level == 1) {
-            return view('admin.dashboard', compact('kategori', 'kasirLabels', 'kasirData', 'kasirInfo', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
+            return view('admin.dashboard', compact('tanggalPenjualanLabels', 'penjualanTerbanyakPerHari', 'totalPenjualanPerHari','kategori', 'kasirLabels', 'kasirData', 'kasirInfo', 'produkLabels', 'produkData', 'penjualanTerbanyakPerBulan', 'produk', 'supplier', 'member', 'tanggal_awal', 'tanggal_akhir', 'data_tanggal', 'data_pendapatan'));
         } else {
             return view('kasir.dashboard');
         }

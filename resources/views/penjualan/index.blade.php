@@ -66,6 +66,7 @@
                                 <div class="btn-group">
                                     <button onclick="showDetail('{{ route('penjualan.show', $data->id_penjualan) }}')" class="btn btn-xs btn-info btn-flat"><i class="fa fa-eye"></i></button>
                                     <button onclick="deleteData('{{ route('penjualan.destroy', $data->id_penjualan) }}')" class="btn btn-xs btn-danger btn-flat"><i class="fa fa-trash"></i></button>
+                                    <button type="button" onclick="editForm('{{ route('penjualan.update', $data->id_penjualan) }}')" class="btn btn-xs btn-info btn-flat"><i class="fa fa-pencil"></i></button>
                                 </div>
                             @endif
                             </td>
@@ -168,6 +169,38 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-form" tabindex="-1" role="dialog" aria-labelledby="modal-form">
+    <div class="modal-dialog modal-lg" role="document">
+        <form action="" method="post" class="form-horizontal">
+            @csrf
+            @method('post')
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                <div class="form-group row">
+    <label for="payment_method" class="col-lg-2 col-lg-offset-1 control-label">Payment Method</label>
+    <div class="col-lg-6">
+        <select name="payment_method" id="payment_method" class="form-control" required autofocus>
+            <option value="qris">QRIS</option>
+            <option value="cash">Cash</option>
+        </select>
+        <span class="help-block with-errors"></span>
+    </div>
+</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-flat btn-primary"><i class="fa fa-save"></i> Simpan</button>
+                    <button type="button" class="btn btn-sm btn-flat btn-warning" data-dismiss="modal"><i class="fa fa-arrow-circle-left"></i> Batal</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 
 @includeIf('penjualan.detail')
@@ -244,6 +277,25 @@
                 });
         }
     }
+    function editForm(url) {
+    $('#modal-form').modal('show');
+    $('#modal-form .modal-title').text('Edit Payment Method');
+
+    $('#modal-form form')[0].reset();
+    $('#modal-form form').attr('action', url);
+    $('#modal-form [name=_method]').val('put');
+    $('#modal-form [name=payment_method]').focus();
+
+    $.get(url)
+        .done((response) => {
+            $('#modal-form [name=payment_method]').val(response.payment_method);
+        })
+        .fail((errors) => {
+            alert('Tidak dapat menampilkan data');
+            return;
+        });
+}
+
 </script>
 <script>
     $(document).ready(function() {
