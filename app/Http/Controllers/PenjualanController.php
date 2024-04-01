@@ -108,20 +108,31 @@ class PenjualanController extends Controller
 
     public function create()
     {
+        // Mengecek apakah terdapat penjualan sebelumnya dengan total_item = 0
+        $previousSale = Penjualan::where('total_item', 0)->latest()->first();
+
+        // Jika penjualan sebelumnya ditemukan, hapus entri tersebut
+        if ($previousSale) {
+            $previousSale->delete();
+        }
+
+        // Membuat entri baru Penjualan
         $penjualan = new Penjualan();
         $penjualan->id_member = null;
         $penjualan->total_item = 0;
         $penjualan->total_harga = 0;
         $penjualan->diskon = 0;
         $penjualan->bayar = 0;
-        $penjualan->kode_bill = 0;
+        $penjualan->kode_bill = null;
         $penjualan->nama = null;
         $penjualan->payment_method = 'cash';
         $penjualan->id_user = auth()->id();
         $penjualan->save();
 
+        // Menyimpan id_penjualan ke dalam session
         session(['id_penjualan' => $penjualan->id_penjualan]);
         return redirect()->route('transaksi.index');
+
     }
 
     public function store(Request $request)
@@ -130,24 +141,28 @@ class PenjualanController extends Controller
         // Mendapatkan tanggal hari ini
         $tanggal = now()->format('Ymd');
 
-        // Mendapatkan jumlah penjualan pada tanggal yang sama
-        $count = Penjualan::whereDate('created_at', now())->count() + 1;
-
-        // Mengecek apakah tanggal sebelumnya sama dengan tanggal hari ini
+        // Mendapatkan tanggal sebelumnya dari data penjualan terbaru
         $previousDate = Penjualan::latest()->value('created_at');
         $previousTanggal = $previousDate ? $previousDate->format('Ymd') : null;
 
-        if ($previousTanggal != $tanggal) {
-            // Jika tanggal berganti, reset nomor urut ke 1
-            $count = 1;
+        // Jika tanggal sebelumnya sama dengan tanggal hari ini, tambahkan nomor urut
+        if ($previousTanggal == $tanggal) {
+            // Mendapatkan nomor urut dari penjualan hari ini
+            $count = Penjualan::whereDate('created_at', now())->count();
+        } else {
+            // Jika tanggal berbeda, nomor urut direset ke 1
+            $count = 0;
         }
 
-        // Menghasilkan kode bill dengan nomor urut yang sesuai
+        // Nomor urut ditambah 1 untuk mendapatkan nomor urut baru
+        $count += 1;
+
+        // Menghasilkan kode bill dengan format tanggal + nomor urut yang sesuai
         $kode_bill = $tanggal . str_pad($count, 3, '0', STR_PAD_LEFT);
 
-        
 
 
+    
         $penjualan = Penjualan::findOrFail($request->id_penjualan);
 
         $penjualan->id_member = $request->id_member;
@@ -219,6 +234,28 @@ class PenjualanController extends Controller
 
         return response(null, 204);
     }
+
+    public function update(Request $request, $id)
+{
+    // Temukan data penjualan berdasarkan ID
+    $penjualan = Penjualan::findOrFail($id);
+
+    // Validasi input jika diperlukan
+    $validatedData = $request->validate([
+        'payment_method' => 'required', // Sesuaikan dengan validasi yang Anda butuhkan
+        // Tambahkan validasi lainnya sesuai kebutuhan
+    ]);
+
+    // Update data penjualan
+    $penjualan->payment_method = $request->input('payment_method');
+    // Tambahkan kode untuk update data lainnya sesuai kebutuhan
+
+    // Simpan perubahan
+    $penjualan->save();
+
+    // Redirect kembali ke halaman index penjualan dengan pesan sukses
+    return redirect()->route('penjualan.index')->with('success', 'Data penjualan berhasil diperbarui.');
+}
 
     public function selesai()
     {

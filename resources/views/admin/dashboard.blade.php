@@ -99,6 +99,44 @@
     </div>
     <!-- /.col -->
 </div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Hari Paling Ramai</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="chart">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Hari Penjualan</th>
+                                        <th>Total Penjualan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($penjualanTerbanyakPerHari as $penjualan)
+                                    <tr>
+                                        <td>{{ $penjualan->hari_penjualan }}</td>
+                                        <td>{{ $penjualan->total_penjualan }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- /.chart-responsive -->
+                    </div>
+                </div>
+                <!-- /.row -->
+            </div>
+        </div>
+        <!-- /.box -->
+    </div>
+    <!-- /.col -->
+</div>
 <!-- /.row (main row) -->
 <!-- Chart Section -->
 <div class="row">
@@ -166,6 +204,7 @@
         <!-- /.box -->
     </div>
 </div>
+
 
 
 @endsection

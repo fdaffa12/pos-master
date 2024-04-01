@@ -25,12 +25,14 @@
 
                 @else
                 <button class="btn btn-primary btn-xs btn-flat" data-toggle="modal" data-target="#modalPaymentMethod"><i class="fa fa-money"></i> Filter Metode Pembayaran</button>
+                <button id="printPDF" class="btn btn-success btn-xs btn-flat"><i class="fa fa-file-pdf"></i> Print PDF</button>
                 @endif
                 <br>
                 <br>
                 <table class="table table-stiped table-bordered table-penjualan">
                     <thead>
                         <th width="5%">No</th>
+                        <th>Kode Bill</th>
                         <th>Tanggal</th>
                         <th>Nama</th>
                         <th>Metode Pembayaran</th>
@@ -46,6 +48,7 @@
                     @foreach ($penjualan as $index => $data)
                         <tr>
                             <td>{{ $index + 1 }}</td>
+                            <td>{{($data->kode_bill)-1 }}</td>
                             <td>{{ tanggal_indonesia($data->created_at, false) }}</td>
                             <td>{{ ucfirst($data->nama) }}</td>
                             <td>{{ ucfirst($data->payment_method) }}</td>
@@ -64,6 +67,7 @@
                                 <div class="btn-group">
                                     <button onclick="showDetail('{{ route('penjualan.show', $data->id_penjualan) }}')" class="btn btn-xs btn-info btn-flat"><i class="fa fa-eye"></i></button>
                                     <button onclick="deleteData('{{ route('penjualan.destroy', $data->id_penjualan) }}')" class="btn btn-xs btn-danger btn-flat"><i class="fa fa-trash"></i></button>
+                                    <button type="button" onclick="editForm('{{ route('penjualan.update', $data->id_penjualan) }}')" class="btn btn-xs btn-info btn-flat"><i class="fa fa-pencil"></i></button>
                                 </div>
                             @endif
                             </td>
@@ -72,7 +76,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="8" style="text-align: center;"><b>Total Penjualan</b></td>
+                            <td colspan="9" style="text-align: center;"><b>Total Penjualan</b></td>
                             <td>Rp. {{ format_uang($totalPendapatan) }}</td>
                             <td></td>
                         </tr>
@@ -166,6 +170,38 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-form" tabindex="-1" role="dialog" aria-labelledby="modal-form">
+    <div class="modal-dialog modal-lg" role="document">
+        <form action="" method="post" class="form-horizontal">
+            @csrf
+            @method('post')
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                <div class="form-group row">
+    <label for="payment_method" class="col-lg-2 col-lg-offset-1 control-label">Payment Method</label>
+    <div class="col-lg-6">
+        <select name="payment_method" id="payment_method" class="form-control" required autofocus>
+            <option value="qris">QRIS</option>
+            <option value="cash">Cash</option>
+        </select>
+        <span class="help-block with-errors"></span>
+    </div>
+</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-flat btn-primary"><i class="fa fa-save"></i> Simpan</button>
+                    <button type="button" class="btn btn-sm btn-flat btn-warning" data-dismiss="modal"><i class="fa fa-arrow-circle-left"></i> Batal</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 
 @includeIf('penjualan.detail')
@@ -242,6 +278,25 @@
                 });
         }
     }
+    function editForm(url) {
+    $('#modal-form').modal('show');
+    $('#modal-form .modal-title').text('Edit Payment Method');
+
+    $('#modal-form form')[0].reset();
+    $('#modal-form form').attr('action', url);
+    $('#modal-form [name=_method]').val('put');
+    $('#modal-form [name=payment_method]').focus();
+
+    $.get(url)
+        .done((response) => {
+            $('#modal-form [name=payment_method]').val(response.payment_method);
+        })
+        .fail((errors) => {
+            alert('Tidak dapat menampilkan data');
+            return;
+        });
+}
+
 </script>
 <script>
     $(document).ready(function() {
@@ -259,7 +314,8 @@
                         <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(5)').text()}</td>
                         <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(6)').text()}</td>
                         <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(7)').text()}</td>
-                        <td style="font-size: 9px;">${$(this).find('td:eq(8)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 9px;">${$(this).find('td:eq(8)').text()}</td>
+                        <td style="font-size: 9px;">${$(this).find('td:eq(9)').text()}</td>
                     </tr>`;
             });
 
@@ -272,6 +328,7 @@
                     <thead>
                         <tr>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">No</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 9px;">Kode Bill</th>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">Tanggal</th>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">Nama</th>
                             <th style="border-right: 1px solid #ddd; font-size: 9px;">Metode Pembayaran</th>

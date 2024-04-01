@@ -43,7 +43,8 @@
         <p style="float: right">{{ strtoupper(auth()->user()->name) }}</p>
     </div>
     <div style="clear: both;"></div>
-    <p>No: {{ tambah_nol_didepan($penjualan->id_penjualan, 10) }}</p>
+    <p>No: {{($penjualan->kode_bill)-1 }}</p>
+    <p style="float: left; text-transform: capitalize;">Jenis Pembayaran {{ ($penjualan->payment_method) }}</p>
     <p class="text-center">===================================</p>
     
     <br>
@@ -55,32 +56,51 @@
                 $nama_produk = $item->produk->nama_produk;
                 $tanggal_dibuat = $item->created_at; // Sesuaikan dengan atribut yang sesuai
                 $paket_1_jam_anak = "Paket 1 Jam Anak";
-        
-                if ($nama_produk == $paket_1_jam_anak) {
+                $one_hours = "one hours"; // Kata yang akan divalidasi
+
+                if (strpos($nama_produk, $one_hours) !== false) {
                     // Tampilkan nama produk
                     echo $nama_produk . "<br>";
-        
+
                     // Tampilkan jam dibuatnya
                     echo "Chekin: " . date('H:i', strtotime($tanggal_dibuat)) . "<br>";
-        
+
                     // Lakukan penjumlahan 60 menit dari jam dibuatnya
                     $tanggal_dibuat_plus_60_menit = strtotime('+60 minutes', strtotime($tanggal_dibuat));
                     $jam_ditambah_60 = date('H:i', $tanggal_dibuat_plus_60_menit);
-        
+
                     echo "Check Out: " . $jam_ditambah_60;
                 } else {
-                    // Jika nama produk bukan "Paket 1 Jam Anak", tampilkan hanya nama produk
+                    // Jika nama produk tidak mengandung "one hours", tampilkan hanya nama produk
                     echo $nama_produk;
                 }
                 ?>
+
             </td>
         </tr>
         
         <tr>
             <td>{{ $item->jumlah }} x {{ format_uang($item->harga_jual) }}</td>
-            <td></td>
-            <td class="text-right">{{ format_uang($item->jumlah * $item->harga_jual) }}</td>
+            @if ($item->produk->diskon > 0)
+                @php
+                    $harga_setelah_diskon = $item->jumlah * $item->harga_jual * (1 - ($item->produk->diskon / 100));
+                    $potongan_diskon = $item->jumlah * $item->harga_jual - $harga_setelah_diskon;
+                @endphp
+                <td class="text-right">
+                    {{ format_uang($item->jumlah * $item->harga_jual) }}
+                    <br>
+                    -({{ format_uang($potongan_diskon) }}) {{ $item->produk->diskon }}%
+                    <br>
+                    {{ format_uang($harga_setelah_diskon) }}
+                    <br>
+                </td>
+            @else
+                <td class="text-right">{{ format_uang($item->jumlah * $item->harga_jual) }}</td>
+            @endif
         </tr>
+        
+        
+        
         @endforeach
     </table>
     <p class="text-center">-----------------------------------</p>

@@ -113,7 +113,7 @@ class PengeluaranController extends Controller
     {
         $pengeluaran = Pengeluaran::find($id)->update($request->all());
 
-        return response()->json('Data berhasil disimpan', 200);
+        return redirect()->back()->with('success', 'Data berhasil disimpan');
     }
 
     /**
