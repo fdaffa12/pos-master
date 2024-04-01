@@ -44,6 +44,7 @@
     </div>
     <div style="clear: both;"></div>
     <p>No: {{($penjualan->kode_bill)-1 }}</p>
+    <p style="float: left; text-transform: capitalize;">Jenis Pembayaran {{ ($penjualan->payment_method) }}</p>
     <p class="text-center">===================================</p>
     
     <br>

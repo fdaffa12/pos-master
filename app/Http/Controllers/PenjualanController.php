@@ -52,44 +52,7 @@ class PenjualanController extends Controller
         // Hitung total pendapatan (total bayar)
         $totalPendapatan = $penjualan->sum('bayar');
 
-        $query = PenjualanDetail::select('produk.id_produk', 'produk.nama_produk', DB::raw('COUNT(*) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
-                    ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
-                    ->whereExists(function ($query) {
-                        $query->select(DB::raw(1))
-                              ->from('penjualan')
-                              ->whereRaw('penjualan.id_penjualan = penjualan_detail.id_penjualan');
-                    })
-                    ->whereBetween('penjualan_detail.created_at', [
-                        $tanggalAwal . ' 00:00:00',
-                        $tanggalAkhir . ' 23:59:59'
-                    ])
-                    ->groupBy('produk.id_produk', 'produk.nama_produk');
-
-        $penjualanPerProduk = $query->get();
-
-
-        $query = PenjualanDetail::select('produk.id_kategori', 'kategori.nama_kategori', DB::raw('COUNT(*) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
-                    ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
-                    ->join('kategori', 'produk.id_kategori', '=', 'kategori.id_kategori')
-                    ->whereExists(function ($query) {
-                        $query->select(DB::raw(1))
-                            ->from('penjualan')
-                            ->whereRaw('penjualan.id_penjualan = penjualan_detail.id_penjualan');
-                    })
-                    ->whereBetween('penjualan_detail.created_at', [
-                        $tanggalAwal . ' 00:00:00',
-                        $tanggalAkhir . ' 23:59:59'
-                    ])
-                    ->groupBy('produk.id_kategori', 'kategori.nama_kategori');
-
-        $penjualanPerKategori = $query->get();
-
-
-
-
-
-
-        return view('penjualan.index', compact('tanggalAwal', 'penjualanPerKategori', 'penjualanPerProduk', 'tanggalAkhir', 'penjualan', 'totalPendapatan'));
+        return view('penjualan.index', compact('tanggalAwal', 'tanggalAkhir', 'penjualan', 'totalPendapatan'));
     }
 
 
