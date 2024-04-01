@@ -6,6 +6,7 @@ use App\Models\Penjualan;
 use App\Models\PenjualanDetail;
 use App\Models\Produk;
 use App\Models\Setting;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use PDF;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +52,44 @@ class PenjualanController extends Controller
         // Hitung total pendapatan (total bayar)
         $totalPendapatan = $penjualan->sum('bayar');
 
-        return view('penjualan.index', compact('tanggalAwal', 'tanggalAkhir', 'penjualan', 'totalPendapatan'));
+        $query = PenjualanDetail::select('produk.id_produk', 'produk.nama_produk', DB::raw('COUNT(*) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
+                    ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
+                    ->whereExists(function ($query) {
+                        $query->select(DB::raw(1))
+                              ->from('penjualan')
+                              ->whereRaw('penjualan.id_penjualan = penjualan_detail.id_penjualan');
+                    })
+                    ->whereBetween('penjualan_detail.created_at', [
+                        $tanggalAwal . ' 00:00:00',
+                        $tanggalAkhir . ' 23:59:59'
+                    ])
+                    ->groupBy('produk.id_produk', 'produk.nama_produk');
+
+        $penjualanPerProduk = $query->get();
+
+
+        $query = PenjualanDetail::select('produk.id_kategori', 'kategori.nama_kategori', DB::raw('COUNT(*) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
+                    ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
+                    ->join('kategori', 'produk.id_kategori', '=', 'kategori.id_kategori')
+                    ->whereExists(function ($query) {
+                        $query->select(DB::raw(1))
+                            ->from('penjualan')
+                            ->whereRaw('penjualan.id_penjualan = penjualan_detail.id_penjualan');
+                    })
+                    ->whereBetween('penjualan_detail.created_at', [
+                        $tanggalAwal . ' 00:00:00',
+                        $tanggalAkhir . ' 23:59:59'
+                    ])
+                    ->groupBy('produk.id_kategori', 'kategori.nama_kategori');
+
+        $penjualanPerKategori = $query->get();
+
+
+
+
+
+
+        return view('penjualan.index', compact('tanggalAwal', 'penjualanPerKategori', 'penjualanPerProduk', 'tanggalAkhir', 'penjualan', 'totalPendapatan'));
     }
 
 
@@ -234,6 +272,28 @@ class PenjualanController extends Controller
 
         return response(null, 204);
     }
+
+    public function update(Request $request, $id)
+{
+    // Temukan data penjualan berdasarkan ID
+    $penjualan = Penjualan::findOrFail($id);
+
+    // Validasi input jika diperlukan
+    $validatedData = $request->validate([
+        'payment_method' => 'required', // Sesuaikan dengan validasi yang Anda butuhkan
+        // Tambahkan validasi lainnya sesuai kebutuhan
+    ]);
+
+    // Update data penjualan
+    $penjualan->payment_method = $request->input('payment_method');
+    // Tambahkan kode untuk update data lainnya sesuai kebutuhan
+
+    // Simpan perubahan
+    $penjualan->save();
+
+    // Redirect kembali ke halaman index penjualan dengan pesan sukses
+    return redirect()->route('penjualan.index')->with('success', 'Data penjualan berhasil diperbarui.');
+}
 
     public function selesai()
     {

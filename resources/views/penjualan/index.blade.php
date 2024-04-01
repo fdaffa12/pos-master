@@ -25,6 +25,7 @@
 
                 @else
                 <button class="btn btn-primary btn-xs btn-flat" data-toggle="modal" data-target="#modalPaymentMethod"><i class="fa fa-money"></i> Filter Metode Pembayaran</button>
+                <button id="printPDF" class="btn btn-success btn-xs btn-flat"><i class="fa fa-file-pdf"></i> Print PDF</button>
                 @endif
                 <br>
                 <br>
@@ -66,6 +67,7 @@
                                 <div class="btn-group">
                                     <button onclick="showDetail('{{ route('penjualan.show', $data->id_penjualan) }}')" class="btn btn-xs btn-info btn-flat"><i class="fa fa-eye"></i></button>
                                     <button onclick="deleteData('{{ route('penjualan.destroy', $data->id_penjualan) }}')" class="btn btn-xs btn-danger btn-flat"><i class="fa fa-trash"></i></button>
+                                    <button type="button" onclick="editForm('{{ route('penjualan.update', $data->id_penjualan) }}')" class="btn btn-xs btn-info btn-flat"><i class="fa fa-pencil"></i></button>
                                 </div>
                             @endif
                             </td>
@@ -84,6 +86,114 @@
         </div>
     </div>
 </div>
+
+@if(auth()->user()->level == 1)
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box">
+            <div class="box-body table-responsive">
+            <h3>Total Pendapatan per Produk</h3>
+                <table class="table table-stiped table-bordered table-perproduk">
+                    <thead>
+                        <tr>
+                            <th>Produk</th>
+                            <th>Jumlah Penjualan</th>
+                            <th>Total Pendapatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @php
+                        $totalPenjualan = 0;
+                    @endphp
+
+                    @foreach($penjualanPerProduk as $penjualan)
+                        <tr>
+                            <td>{{ $penjualan->nama_produk }}</td>
+                            <td>{{ $penjualan->jumlah_penjualan }}</td>
+                            <td>Rp. {{ format_uang($penjualan->total) }}</td>
+                        </tr>
+                        @php
+                            $totalPenjualan += $penjualan->total;
+                        @endphp
+                    @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td></td>
+                            <td><strong>Total Penjualan</strong></td>
+                            <td><strong>Rp. {{ format_uang($totalPenjualan) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><strong>Potongan Member</strong></td>
+                            <td><strong>Rp. {{ format_uang($totalPenjualan - $totalPendapatan) }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td><strong>Total</strong></td>
+                            <td><strong>Rp. {{ format_uang($totalPendapatan) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>    
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="box">
+            <div class="box-body table-responsive">
+            <h3>Total Penjualan per Kategori</h3>
+            <table class="table table-stiped table-bordered table-perkategori">
+                <thead>
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Jumlah Penjualan</th>
+                        <th>Total Pendapatan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php
+                        $totalPenjualan = 0;
+                    @endphp
+                    @foreach($penjualanPerKategori as $penjualan)
+                        <tr>
+                            <td>{{ $penjualan->nama_kategori }}</td>
+                            <td>{{ $penjualan->jumlah_penjualan }}</td>
+                            <td>Rp. {{ format_uang($penjualan->total) }}</td>
+                        </tr>
+                        @php
+                            $totalPenjualan += $penjualan->total;
+                        @endphp
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <td><strong>Total Penjualan</strong></td>
+                        <td><strong>Rp. {{ format_uang($totalPenjualan) }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><strong>Total Potongan Member</strong></td>
+                        <td><strong>Rp. {{ format_uang($totalPenjualan - $totalPendapatan) }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td><strong>Total</strong></td>
+                        <td><strong>Rp. {{ format_uang($totalPendapatan) }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table> 
+            </div>
+        </div>
+    </div>
+</div>
+
+@endif
+
 
 <!-- Modal -->
 <div id="modalTanggal" class="modal fade" role="dialog">
@@ -168,6 +278,38 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal-form" tabindex="-1" role="dialog" aria-labelledby="modal-form">
+    <div class="modal-dialog modal-lg" role="document">
+        <form action="" method="post" class="form-horizontal">
+            @csrf
+            @method('post')
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                <div class="form-group row">
+    <label for="payment_method" class="col-lg-2 col-lg-offset-1 control-label">Payment Method</label>
+    <div class="col-lg-6">
+        <select name="payment_method" id="payment_method" class="form-control" required autofocus>
+            <option value="qris">QRIS</option>
+            <option value="cash">Cash</option>
+        </select>
+        <span class="help-block with-errors"></span>
+    </div>
+</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-flat btn-primary"><i class="fa fa-save"></i> Simpan</button>
+                    <button type="button" class="btn btn-sm btn-flat btn-warning" data-dismiss="modal"><i class="fa fa-arrow-circle-left"></i> Batal</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 
 @includeIf('penjualan.detail')
@@ -244,6 +386,25 @@
                 });
         }
     }
+    function editForm(url) {
+    $('#modal-form').modal('show');
+    $('#modal-form .modal-title').text('Edit Payment Method');
+
+    $('#modal-form form')[0].reset();
+    $('#modal-form form').attr('action', url);
+    $('#modal-form [name=_method]').val('put');
+    $('#modal-form [name=payment_method]').focus();
+
+    $.get(url)
+        .done((response) => {
+            $('#modal-form [name=payment_method]').val(response.payment_method);
+        })
+        .fail((errors) => {
+            alert('Tidak dapat menampilkan data');
+            return;
+        });
+}
+
 </script>
 <script>
     $(document).ready(function() {
