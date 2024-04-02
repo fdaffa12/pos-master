@@ -66,34 +66,36 @@ class DashboardController extends Controller
 
         // Tentukan bulan yang ingin Anda ambil data penjualannya
         $bulan_tujuan = date('m'); // Misalnya, kita ingin ambil data untuk bulan ini
-
+        
         // Ambil data penjualan terbanyak per bulan untuk setiap produk untuk bulan yang ditentukan
         $penjualanTerbanyakPerBulan = PenjualanDetail::select(DB::raw('YEAR(created_at) as tahun, MONTH(created_at) as bulan'), 'id_produk')
             ->selectRaw('COUNT(*) as total_penjualan')
             ->with('produk') // Eager load relasi produk
             ->whereMonth('created_at', $bulan_tujuan) // Filter hanya data untuk bulan yang ditentukan
             ->groupBy('tahun', 'bulan', 'id_produk')
-            ->orderByDesc('tahun')
-            ->orderByDesc('bulan')
+            ->orderByDesc('total_penjualan') // Urutkan berdasarkan total penjualan secara menurun
             ->limit(5)
             ->get();
-
+        
         // Mendapatkan daftar nama produk dan total penjualannya
         $produkLabels = [];
         $produkData = [];
-
+        
         foreach ($penjualanTerbanyakPerBulan as $penjualan) {
             if ($penjualan->produk) {
                 $produkLabels[] = $penjualan->produk->nama_produk; // Ambil nama produk
                 $produkData[] = $penjualan->total_penjualan; // Ambil total penjualan
             }
         }
+        
+        // Mengurutkan produkLabels dan produkData berdasarkan total penjualan
+        array_multisort($produkData, SORT_DESC, $produkLabels);
 
 
         // Ambil bulan dan tahun saat ini
         $bulanIni = date('m');
         $tahunIni = date('Y');
-
+        
         // Ambil data kasir dengan penjualan terbanyak per bulan
         $kasirTerbanyak = Penjualan::select('id_user')
             ->selectRaw('COUNT(*) as total_penjualan')
@@ -103,25 +105,28 @@ class DashboardController extends Controller
             ->orderByDesc('total_penjualan')
             ->limit(5)
             ->get();
-
+        
         // Mendapatkan daftar ID kasir dengan penjualan terbanyak
         $kasirIds = $kasirTerbanyak->pluck('id_user');
-
+        
         // Ambil informasi kasir berdasarkan ID kasir dengan penjualan terbanyak
         $kasirInfo = DB::table('users')
             ->select('users.*', DB::raw('(SELECT COUNT(*) FROM penjualan WHERE penjualan.id_user = users.id AND MONTH(penjualan.created_at) = ' . $bulanIni . ' AND YEAR(penjualan.created_at) = ' . $tahunIni . ') as total_penjualan'))
             ->whereIn('id', $kasirIds)
             ->orderByDesc('total_penjualan')
             ->get();
-
+        
         // Kemudian, Anda dapat membuat array dari nama-nama kasir untuk digunakan sebagai labels di chart
         $kasirLabels = [];
         $kasirData = [];
-
+        
         foreach ($kasirInfo as $kasir) {
             $kasirLabels[] = $kasir->name; // Ambil nama kasir
             $kasirData[] = $kasir->total_penjualan; // Ambil total penjualan
         }
+        
+        // Mengurutkan kasirLabels dan kasirData berdasarkan total penjualan
+        array_multisort($kasirData, SORT_DESC, $kasirLabels);
 
 
 

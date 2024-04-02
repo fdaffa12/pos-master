@@ -87,7 +87,7 @@
     </div>
 </div>
 
-
+@if(auth()->user()->level == 1)
 <div class="row">
     <div class="col-lg-12">
         <div class="box">
@@ -140,7 +140,6 @@
     </div>
 </div>
 
-@if(auth()->user()->level == 1)
 
 <div class="row">
     <div class="col-lg-12">
