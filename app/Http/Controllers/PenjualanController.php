@@ -52,7 +52,7 @@ class PenjualanController extends Controller
         // Hitung total pendapatan (total bayar)
         $totalPendapatan = $penjualan->sum('bayar');
 
-        $query = PenjualanDetail::select('produk.id_produk', 'produk.nama_produk', DB::raw('COUNT(*) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
+        $query = PenjualanDetail::select('produk.id_produk', 'produk.nama_produk', DB::raw('sum(jumlah) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
                     ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
                     ->whereExists(function ($query) {
                         $query->select(DB::raw(1))
@@ -70,7 +70,7 @@ class PenjualanController extends Controller
 
 
 
-        $query = PenjualanDetail::select('produk.id_kategori', 'kategori.nama_kategori', DB::raw('COUNT(*) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
+        $query = PenjualanDetail::select('produk.id_kategori', 'kategori.nama_kategori', DB::raw('sum(jumlah) as jumlah_penjualan'), DB::raw('SUM(subtotal) as total'))
                     ->join('produk', 'penjualan_detail.id_produk', '=', 'produk.id_produk')
                     ->join('kategori', 'produk.id_kategori', '=', 'kategori.id_kategori')
                     ->whereExists(function ($query) {
