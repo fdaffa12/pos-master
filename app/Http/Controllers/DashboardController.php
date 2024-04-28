@@ -45,15 +45,19 @@ class DashboardController extends Controller
 
         $tanggal_awal = date('Y-m-01');
 
-        // Ambil data penjualan terbanyak per bulan untuk setiap produk
+        // Tentukan bulan yang ingin Anda ambil data penjualannya
+        $bulan_tujuan = date('m'); // Misalnya, kita ingin ambil data untuk bulan ini
+
+        // Ambil data penjualan terbanyak per bulan untuk setiap produk untuk bulan yang ditentukan
         $penjualanTerbanyakPerBulan = PenjualanDetail::select(DB::raw('YEAR(created_at) as tahun, MONTH(created_at) as bulan'), 'id_produk')
-        ->selectRaw('COUNT(*) as total_penjualan')
-        ->with('produk') // Eager load relasi produk
-        ->groupBy('tahun', 'bulan', 'id_produk')
-        ->orderByDesc('tahun')
-        ->orderByDesc('bulan')
-        ->limit(5)
-        ->get();
+            ->selectRaw('COUNT(*) as total_penjualan')
+            ->with('produk') // Eager load relasi produk
+            ->whereMonth('created_at', $bulan_tujuan) // Filter hanya data untuk bulan yang ditentukan
+            ->groupBy('tahun', 'bulan', 'id_produk')
+            ->orderByDesc('tahun')
+            ->orderByDesc('bulan')
+            ->limit(5)
+            ->get();
 
         // Mendapatkan daftar nama produk dan total penjualannya
         $produkLabels = [];
@@ -65,6 +69,7 @@ class DashboardController extends Controller
                 $produkData[] = $penjualan->total_penjualan; // Ambil total penjualan
             }
         }
+
 
         // Ambil bulan dan tahun saat ini
         $bulanIni = date('m');

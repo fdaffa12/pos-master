@@ -78,9 +78,20 @@
         
         <tr>
             <td>{{ $item->jumlah }} x {{ format_uang($item->harga_jual) }}</td>
-            <td></td>
-            <td class="text-right">{{ format_uang($item->jumlah * $item->harga_jual) }}</td>
+            <td>
+                @php
+                    $potongan_harga = 0;
+                    if ($item->subtotal < $item->harga_jual) {
+                        $potongan_harga = $item->harga_jual - $item->subtotal;
+                    }
+                @endphp
+                @if ($potongan_harga > 0)
+                    - {{ format_uang($potongan_harga) }}
+                @endif
+            </td>
+            <td class="text-right">{{ format_uang($item->jumlah * $item->subtotal) }}</td>
         </tr>
+        
         @endforeach
     </table>
     <p class="text-center">-----------------------------------</p>
