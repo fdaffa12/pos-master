@@ -139,14 +139,22 @@ class UserController extends Controller
                 return response()->json('Password lama tidak sesuai', 422);
             }
         }
-
+        
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $nama = 'logo-' . date('YmdHis') . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('/img'), $nama);
-
-            $user->foto = "/img/$nama";
+            $file->move('img', $file->getClientOriginalName());
+            $user->foto = 'img/' . $file->getClientOriginalName();
         }
+        
+
+
+        // if ($request->hasFile('foto')) {
+        //     $file = $request->file('foto');
+        //     $nama = 'logo-' . date('YmdHis') . '.' . $file->getClientOriginalExtension();
+        //     $file->move(public_path('/img'), $nama);
+
+        //     $user->foto = "/img/$nama";
+        // }
 
         $user->update();
 
