@@ -52,11 +52,12 @@
         @foreach ($detail as $item)
         <tr>
             <td colspan="3">
-                <?php
+            <?php
                 $nama_produk = $item->produk->nama_produk;
                 $tanggal_dibuat = $item->created_at; // Sesuaikan dengan atribut yang sesuai
                 $paket_1_jam_anak = "Paket 1 Jam Anak";
                 $one_hours = "one hours"; // Kata yang akan divalidasi
+                $mobilan = "Mobilan"; // Nama produk Mobilan
 
                 if (strpos($nama_produk, $one_hours) !== false) {
                     // Tampilkan nama produk
@@ -70,11 +71,24 @@
                     $jam_ditambah_60 = date('H:i', $tanggal_dibuat_plus_60_menit);
 
                     echo "Check Out: " . $jam_ditambah_60;
+                } else if (strpos($nama_produk, $mobilan) !== false) {
+                    // Tampilkan nama produk
+                    echo $nama_produk . "<br>";
+
+                    // Tampilkan jam mulai bermain
+                    echo "Mulai Bermain: " . date('H:i', strtotime($tanggal_dibuat)) . "<br>";
+
+                    // Lakukan penjumlahan 15 menit dari jam mulai bermain
+                    $tanggal_dibuat_plus_15_menit = strtotime('+15 minutes', strtotime($tanggal_dibuat));
+                    $jam_berakhir = date('H:i', $tanggal_dibuat_plus_15_menit);
+
+                    echo "Selesai Bermain: " . $jam_berakhir;
                 } else {
-                    // Jika nama produk tidak mengandung "one hours", tampilkan hanya nama produk
+                    // Jika nama produk tidak mengandung "one hours" atau "Mobilan", tampilkan hanya nama produk
                     echo $nama_produk;
                 }
                 ?>
+
 
             </td>
         </tr>

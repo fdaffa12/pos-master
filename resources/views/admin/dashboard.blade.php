@@ -16,7 +16,7 @@
         <!-- small box -->
         <div class="small-box bg-aqua">
             <div class="inner">
-                <h3>{{ $kategori }}</h3>
+                <h3>{{ $category }}</h3>
 
                 <p>Total Kategori</p>
             </div>
@@ -99,8 +99,9 @@
     </div>
     <!-- /.col -->
 </div>
+<!-- Chart Section -->
 <div class="row">
-    <div class="col-lg-12">
+<div class="col-lg-6">
         <div class="box">
             <div class="box-header with-border">
                 <h3 class="box-title">Hari Paling Ramai</h3>
@@ -136,10 +137,37 @@
         <!-- /.box -->
     </div>
     <!-- /.col -->
-</div>
-<!-- /.row (main row) -->
-<!-- Chart Section -->
-<div class="row">
+    <div class="col-lg-6">
+        <div class="box">
+            <div class="box-header with-border">
+                <h3 class="box-title">Kasir dengan Penjualan Terbanyak</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-bo">
+                <canvas id="kasirTerbanyakChart" style="height: 300px;"></canvas>
+            </div>
+            <div class="box-body">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nama Kasir</th>
+                            <th>Total Penjualan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($kasirInfo as $kasir)
+                        <tr>
+                            <td>{{ $kasir->name }}</td>
+                            <td>{{ $kasir->total_penjualan }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <!-- /.box-body -->
+        </div>
+        <!-- /.box -->
+    </div>
     <div class="col-lg-6">
         <div class="box">
             <div class="box-header with-border">
@@ -175,25 +203,26 @@
     <div class="col-lg-6">
         <div class="box">
             <div class="box-header with-border">
-                <h3 class="box-title">Kasir dengan Penjualan Terbanyak</h3>
+                <h3 class="box-title">Kategori Teratas Bulan Ini</h3>
             </div>
             <!-- /.box-header -->
-            <div class="box-bo">
-                <canvas id="kasirTerbanyakChart" style="height: 300px;"></canvas>
+            <div class="box-body">
+                <!-- Canvas untuk Pie Chart -->
+                <canvas id="kategoriTeratasChart" style="height: 300px;"></canvas>
             </div>
             <div class="box-body">
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Nama Kasir</th>
+                            <th>Nama Kategori</th>
                             <th>Total Penjualan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($kasirInfo as $kasir)
+                        @foreach($kategoriTerbanyakPerBulan as $kategori)
                         <tr>
-                            <td>{{ $kasir->name }}</td>
-                            <td>{{ $kasir->total_penjualan }}</td>
+                            <td>{{ $kategori->nama_kategori }}</td>
+                            <td>{{ $kategori['total_penjualan'] }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -356,5 +385,61 @@ $(function() {
     var pieChart = new Chart(pieChartCanvas).Pie(PieData, pieOptions);
 });
 
+</script>
+<script>
+    $(function() {
+        // Get context with jQuery - using jQuery's .get() method.
+        var pieChartCanvas = $('#kategoriTeratasChart').get(0).getContext('2d');
+
+        // Data kategori teratas Anda
+        var kategoriLabels = {!! json_encode($kategoriLabels) !!};
+        var kategoriData = {!! json_encode($kategoriData) !!};
+        var kategoriColors = [
+            '#f56954', // Merah
+            '#00a65a', // Hijau
+            '#f39c12', // Kuning
+            '#00c0ef', // Biru
+            '#3c8dbc', // Biru Tua
+            '#d2d6de'  // Abu-Abu
+        ];
+
+        var PieData = [];
+        for (var i = 0; i < kategoriLabels.length; i++) {
+            PieData.push({
+                value: kategoriData[i],
+                color: kategoriColors[i],
+                highlight: kategoriColors[i],
+                label: kategoriLabels[i]
+            });
+        }
+
+        var pieOptions = {
+            //Boolean - Whether we should show a stroke on each segment
+            segmentShowStroke: true,
+            //String - The colour of each segment stroke
+            segmentStrokeColor: '#fff',
+            //Number - The width of each segment stroke
+            segmentStrokeWidth: 2,
+            //Number - The percentage of the chart that we cut out of the middle
+            percentageInnerCutout: 50, // This is 0 for Pie charts
+            //Number - Amount of animation steps
+            animationSteps: 100,
+            //String - Animation easing effect
+            animationEasing: 'easeOutBounce',
+            //Boolean - Whether we animate the rotation of the Doughnut
+            animateRotate: true,
+            //Boolean - Whether we animate scaling the Doughnut from the centre
+            animateScale: false,
+            //Boolean - whether to make the chart responsive to window resizing
+            responsive: true,
+            // Boolean - whether to maintain the starting aspect ratio or not when responsive, if set to false, will take up entire container
+            maintainAspectRatio: true,
+            //String - A legend template
+            legendTemplate: '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<segments.length; i++){%><li><span style="background-color:<%=segments[i].fillColor%>"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>'
+        };
+
+        // Create pie chart
+        var pieChart = new Chart(pieChartCanvas).Pie(PieData, pieOptions);
+    });
 </script>
 @endpush
