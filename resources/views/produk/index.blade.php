@@ -18,12 +18,13 @@
                     <button onclick="addForm('{{ route('produk.store') }}')" class="btn btn-success btn-xs btn-flat"><i class="fa fa-plus-circle"></i> Tambah</button>
                     <button onclick="deleteSelected('{{ route('produk.delete_selected') }}')" class="btn btn-danger btn-xs btn-flat"><i class="fa fa-trash"></i> Hapus</button>
                     <button onclick="cetakBarcode('{{ route('produk.cetak_barcode') }}')" class="btn btn-info btn-xs btn-flat"><i class="fa fa-barcode"></i> Cetak Barcode</button>
+                    <button id="printPDF" class="btn btn-success btn-xs btn-flat"><i class="fa fa-file-pdf"></i> Print PDF</button>
                 </div>
             </div>
             <div class="box-body table-responsive">
                 <form action="" method="post" class="form-produk">
                     @csrf
-                    <table class="table table-stiped table-bordered">
+                    <table class="table table-stiped table-bordered table-produk">
                         <thead>
                             <th width="5%">
                                 <input type="checkbox" name="select_all" id="select_all">
@@ -39,6 +40,9 @@
                             <th>Stok</th>
                             <th width="15%"><i class="fa fa-cog"></i></th>
                         </thead>
+                        <tbody>
+                        <!-- Data pembelian akan ditampilkan di sini -->
+                        </tbody>
                     </table>
                 </form>
             </div>
@@ -179,5 +183,52 @@
                 .submit();
         }
     }
+</script>
+<script>
+    $(document).ready(function() {
+        $('#printPDF').click(function() {
+            // Mendapatkan HTML dari kolom yang diinginkan
+            var tbodyHtml = '';
+            $('.table-produk tbody tr').each(function(index) {
+                tbodyHtml += `
+                    <tr>
+                        <td style="border-right: 1px solid #ddd; font-size: 12px;">${$(this).find('td:eq(1)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 12px;">${$(this).find('td:eq(2)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 12px;">${$(this).find('td:eq(3)').text()}</td>
+                        <td style="border-right: 1px solid #ddd; font-size: 12px;">${$(this).find('td:eq(4)').text()}</td>
+                        <td style="font-size: 12px;">${$(this).find('td:eq(9)').text()}</td>
+                    </tr>`;
+            });
+
+            // Membuat konten untuk tabel dengan menambahkan thead dan tbody
+            var tableHtml = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="border-right: 1px solid #ddd; font-size: 12px;">No</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 12px;">Kode</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 12px;">Nama</th>
+                            <th style="border-right: 1px solid #ddd; font-size: 12px;">Kategori</th>
+                            <th style="font-size: 12px;">Stok</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tbodyHtml}
+                    </tbody>
+                </table>`;
+
+            // Membuka jendela baru untuk mencetak laporan
+            var newWindow = window.open('', '_blank');
+            newWindow.document.write('<html><head><title>Stok Produk</title><style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; } th, td { padding: 4px; text-align: left; border-bottom: 1px solid #ddd; } th { background-color: #f2f2f2; }</style></head><body>');
+            newWindow.document.write('<h1 style="text-align: center; font-size: 12px;">Stok Produk</h1>');
+            newWindow.document.write(tableHtml);
+            newWindow.document.write('</body></html>');
+            newWindow.document.close();
+
+            // Mencetak laporan
+            newWindow.print();
+        });
+    });
+
 </script>
 @endpush
