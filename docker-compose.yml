@@ -15,7 +15,7 @@ services:
       resources:
         limits:
           cpus: '2.0'  # Batasi CPU untuk aplikasi Laravel
-          memory: 2G   # Batasi penggunaan memori untuk aplikasi Laravel
+          memory: 3G   # Batasi penggunaan memori untuk aplikasi Laravel
     networks:
       - laravel
 
